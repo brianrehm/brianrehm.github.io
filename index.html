@@ -4,101 +4,61 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Classroom Timer</title>
+  <title>Classroom Timer v3</title>
   <style>
     * { box-sizing: border-box; }
     body { margin: 0; min-height: 100vh; overflow: hidden; font-family: system-ui, sans-serif; background: #145a32; color: #fff; display: grid; place-items: center; transition: background .3s ease; }
+    body.dark-mode { background: #111216 !important; }
     #app { width: 95%; text-align: center; z-index: 1; }
     #time { font-variant-numeric: tabular-nums; font-size: 18vw; font-weight: 700; line-height: 1; }
+    button, input { font: inherit; }
     button { margin: 6px; padding: 10px 16px; color: #111; font-size: 18px; border: 0; border-radius: 10px; cursor: pointer; }
+    #dark-mode { position: fixed; top: 18px; right: 18px; z-index: 1; color: #fff; background: rgb(255 255 255 / 14%); border: 1px solid rgb(255 255 255 / 25%); font-size: 14px; }
+    #dark-mode.enabled { color: #111; background: #fff; }
     .active { outline: 3px solid #fff; }
-    /* The path starts in the upper-left and naturally travels clockwise. */
     #border { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; }
     #border-track, #border-progress { fill: none; stroke-width: 20; vector-effect: non-scaling-stroke; }
     #border-track { stroke: rgb(255 255 255 / 20%); }
-    #border-progress { stroke: #fff; stroke-linecap: round; stroke-dasharray: 100; stroke-dashoffset: 100; transition: stroke-dashoffset .08s linear, stroke .3s ease; }
+    #border-progress { stroke: #fff; stroke-linecap: round; stroke-dasharray: 100; stroke-dashoffset: 100; transition: stroke-dashoffset .08s linear; }
     #help-menu { position: fixed; inset: 0; z-index: 2; display: grid; place-items: center; padding: 24px; background: rgb(0 0 0 / 58%); opacity: 0; pointer-events: none; transition: opacity .2s ease; }
     #help-menu.open { opacity: 1; pointer-events: auto; }
     .help-card { width: min(460px, 100%); padding: 30px; border: 1px solid rgb(255 255 255 / 25%); border-radius: 18px; background: #17211a; box-shadow: 0 20px 60px rgb(0 0 0 / 35%); text-align: left; }
     .help-card h2 { margin: 0 0 20px; font-size: 1.45rem; }
     .help-card dl { display: grid; grid-template-columns: auto 1fr; gap: 14px 20px; margin: 0; align-items: center; font-size: 1.05rem; }
     .help-card dt { padding: 4px 9px; border-radius: 6px; background: rgb(255 255 255 / 13%); font-weight: 700; }
-    .help-card dd { margin: 0; }
-    .help-card p { margin: 24px 0 0; color: rgb(255 255 255 / 70%); font-size: .9rem; }
+    .help-card dd { margin: 0; }.help-card p { margin: 24px 0 0; color: rgb(255 255 255 / 70%); font-size: .9rem; }
   </style>
 </head>
 <body>
-  <svg id="border" aria-hidden="true">
-    <rect id="border-track" pathLength="100" />
-    <rect id="border-progress" pathLength="100" />
-  </svg>
+  <svg id="border" aria-hidden="true"><rect id="border-track" pathLength="100" /><rect id="border-progress" pathLength="100" /></svg>
+  <button id="dark-mode" type="button" aria-pressed="false">Dark mode</button>
   <main id="app">
     <div id="time" aria-live="polite">5:00</div>
     <div id="buttons" aria-label="Preset timers"></div>
-    <div style="margin-top:10px">
-      <label for="custom">Custom time</label>
-      <input id="custom" placeholder="7m30s" />
-      <button id="go" type="button">Go</button>
-    </div>
+    <div style="margin-top:10px"><label for="custom">Custom time</label> <input id="custom" placeholder="7m30s" /> <button id="go" type="button">Go</button></div>
   </main>
-  <section id="help-menu" role="dialog" aria-modal="true" aria-labelledby="help-title" aria-hidden="true">
-    <div class="help-card">
-      <h2 id="help-title">Keyboard shortcuts</h2>
-      <dl>
-        <dt>Space</dt><dd>Pause or resume</dd>
-        <dt>1–8</dt><dd>Start a preset timer</dd>
-        <dt>R</dt><dd>Restart the current timer</dd>
-        <dt>F</dt><dd>Toggle fullscreen</dd>
-        <dt>?</dt><dd>Show or hide this help menu</dd>
-      </dl>
-      <p>Press Esc or ? to close.</p>
-    </div>
-  </section>
+  <section id="help-menu" role="dialog" aria-modal="true" aria-labelledby="help-title" aria-hidden="true"><div class="help-card"><h2 id="help-title">Keyboard shortcuts</h2><dl><dt>Space</dt><dd>Pause or resume</dd><dt>1–8</dt><dd>Start a preset timer</dd><dt>R</dt><dd>Restart the current timer</dd><dt>F</dt><dd>Toggle fullscreen</dd><dt>D</dt><dd>Toggle dark mode</dd><dt>?</dt><dd>Show or hide this help menu</dd></dl><p>Press Esc or ? to close.</p></div></section>
   <script>
-    const presets = [90, 120, 180, 240, 300, 600, 900, 1200];
-    const labels = ['90s', '2m', '3m', '4m', '5m', '10m', '15m', '20m'];
+    const presets = [90,120,180,240,300,600,900,1200], labels = ['90s','2m','3m','4m','5m','10m','15m','20m'];
     let total = 300, end = 0, running = false, remaining = 300;
-    const buttons = document.getElementById('buttons');
-    const time = document.getElementById('time');
-    const progress = document.getElementById('border-progress');
-    const borderTrack = document.getElementById('border-track');
-    const helpMenu = document.getElementById('help-menu');
-
-    function sizeBorder() {
-      const inset = 5, width = innerWidth - inset * 2, height = innerHeight - inset * 2;
-      document.getElementById('border').setAttribute('viewBox', `0 0 ${innerWidth} ${innerHeight}`);
-      [borderTrack, progress].forEach(rect => { rect.setAttribute('x', inset); rect.setAttribute('y', inset); rect.setAttribute('width', width); rect.setAttribute('height', height); });
-    }
-    labels.forEach((label, index) => { const button = document.createElement('button'); button.textContent = label; button.addEventListener('click', () => load(presets[index], button, true)); buttons.appendChild(button); });
-    function load(seconds, selected, startImmediately) { total = remaining = seconds; running = false; end = 0; document.querySelectorAll('#buttons button').forEach(button => button.classList.remove('active')); if (selected) selected.classList.add('active'); render(); if (startImmediately) toggle(); }
-    function format(seconds) { seconds = Math.ceil(seconds); return `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, '0')}`; }
-    function render() {
-      const displayTime = format(remaining);
-      time.textContent = displayTime;
-      document.title = `${displayTime}`;
-      progress.style.strokeDashoffset = 100 * (remaining / total);
-      document.body.style.background = remaining <= 10 ? '#8b0000' : remaining <= 30 ? '#d97706' : remaining <= 60 ? '#b59b00' : '#145a32';
-    }
-    function tick() { if (!running) return; remaining = Math.max(0, (end - Date.now()) / 1000); if (!remaining) { running = false; beep(); } render(); }
-    function toggle() { if (!running) { end = Date.now() + remaining * 1000; running = true; } else { remaining = (end - Date.now()) / 1000; running = false; } }
-    function restart() { running = false; remaining = total; render(); }
-    function toggleHelp() { const open = !helpMenu.classList.contains('open'); helpMenu.classList.toggle('open', open); helpMenu.setAttribute('aria-hidden', String(!open)); }
-    function beep() { const context = new (window.AudioContext || window.webkitAudioContext)(); const oscillator = context.createOscillator(); const gain = context.createGain(); oscillator.connect(gain).connect(context.destination); oscillator.frequency.value = 880; oscillator.start(); oscillator.stop(context.currentTime + .6); }
-    function parse(text) { let seconds = 0, match; text = text.toLowerCase(); while ((match = /(\d+)h/.exec(text))) { seconds += Number(match[1]) * 3600; text = text.replace(match[0], ''); } while ((match = /(\d+)m/.exec(text))) { seconds += Number(match[1]) * 60; text = text.replace(match[0], ''); } while ((match = /(\d+)s/.exec(text))) { seconds += Number(match[1]); text = text.replace(match[0], ''); } return seconds; }
-    setInterval(tick, 80);
-    document.getElementById('go').addEventListener('click', () => { const seconds = parse(document.getElementById('custom').value); if (seconds) load(seconds, null, true); });
-    document.addEventListener('keydown', event => {
-      // Let the custom-time field receive every key without triggering timer shortcuts.
-      if (event.target.matches('input, textarea, select')) return;
-      if (event.key === '?') { toggleHelp(); return; }
-      if (event.key === 'Escape' && helpMenu.classList.contains('open')) { toggleHelp(); return; }
-      if (helpMenu.classList.contains('open')) return;
-      if (event.code === 'Space') { event.preventDefault(); toggle(); }
-      if (event.key.toLowerCase() === 'r') restart();
-      if (event.key.toLowerCase() === 'f') { if (document.fullscreenElement) document.exitFullscreen(); else document.documentElement.requestFullscreen(); }
-      if ('12345678'.includes(event.key)) document.querySelectorAll('#buttons button')[Number(event.key) - 1].click();
-    });
-    addEventListener('resize', sizeBorder); sizeBorder(); render();
+    const buttons = document.getElementById('buttons'), time = document.getElementById('time'), progress = document.getElementById('border-progress'), borderTrack = document.getElementById('border-track'), helpMenu = document.getElementById('help-menu'), darkButton = document.getElementById('dark-mode');
+    let darkMode = localStorage.getItem('classroom-timer-dark-mode') === 'true';
+    function sizeBorder() { const inset=10, width=innerWidth-inset*2, height=innerHeight-inset*2; document.getElementById('border').setAttribute('viewBox',`0 0 ${innerWidth} ${innerHeight}`); [borderTrack,progress].forEach(rect=>{rect.setAttribute('x',inset);rect.setAttribute('y',inset);rect.setAttribute('width',width);rect.setAttribute('height',height);}); }
+    function setDarkMode(enabled) { darkMode=enabled; document.body.classList.toggle('dark-mode',enabled); darkButton.classList.toggle('enabled',enabled); darkButton.setAttribute('aria-pressed',String(enabled)); darkButton.textContent=enabled ? 'Color mode' : 'Dark mode'; localStorage.setItem('classroom-timer-dark-mode',String(enabled)); render(); }
+    labels.forEach((label,index)=>{const button=document.createElement('button');button.textContent=label;button.addEventListener('click',()=>load(presets[index],button,true));buttons.appendChild(button);});
+    function load(seconds, selected, startImmediately) { total=remaining=seconds; running=false; end=0; document.querySelectorAll('#buttons button').forEach(button=>button.classList.remove('active'));if(selected)selected.classList.add('active');render();if(startImmediately)toggle(); }
+    function format(seconds) { seconds=Math.ceil(seconds);return `${Math.floor(seconds/60)}:${String(seconds%60).padStart(2,'0')}`; }
+    function render() { const displayTime=format(remaining);time.textContent=displayTime;document.title=`${displayTime} — Classroom Timer`;progress.style.strokeDashoffset=100*(remaining/total);if(!darkMode)document.body.style.background=remaining<=10?'#8b0000':remaining<=30?'#d97706':remaining<=60?'#b59b00':'#145a32'; }
+    function tick() {if(!running)return;remaining=Math.max(0,(end-Date.now())/1000);if(!remaining){running=false;beep();}render();}
+    function toggle() {if(!running){end=Date.now()+remaining*1000;running=true;}else{remaining=(end-Date.now())/1000;running=false;}}
+    function restart() {running=false;remaining=total;render();}
+    function toggleHelp() {const open=!helpMenu.classList.contains('open');helpMenu.classList.toggle('open',open);helpMenu.setAttribute('aria-hidden',String(!open));}
+    function beep(){const context=new(window.AudioContext||window.webkitAudioContext)(),oscillator=context.createOscillator(),gain=context.createGain();oscillator.connect(gain).connect(context.destination);oscillator.frequency.value=880;oscillator.start();oscillator.stop(context.currentTime+.6);}
+    function parse(text){let seconds=0,match;text=text.toLowerCase();while((match=/(\d+)h/.exec(text))){seconds+=Number(match[1])*3600;text=text.replace(match[0],'');}while((match=/(\d+)m/.exec(text))){seconds+=Number(match[1])*60;text=text.replace(match[0],'');}while((match=/(\d+)s/.exec(text))){seconds+=Number(match[1]);text=text.replace(match[0],'');}return seconds;}
+    setInterval(tick,80); darkButton.addEventListener('click',()=>setDarkMode(!darkMode));document.getElementById('go').addEventListener('click',()=>{const seconds=parse(document.getElementById('custom').value);if(seconds)load(seconds,null,true);});
+    document.getElementById('custom').addEventListener('keydown', event => { if (event.key === 'Enter') { event.preventDefault(); document.getElementById('go').click(); } });
+    document.addEventListener('keydown',event=>{if(event.target.matches('input,textarea,select'))return;if(event.key==='?'){toggleHelp();return;}if(event.key==='Escape'&&helpMenu.classList.contains('open')){toggleHelp();return;}if(helpMenu.classList.contains('open'))return;if(event.code==='Space'){event.preventDefault();toggle();}if(event.key.toLowerCase()==='r')restart();if(event.key.toLowerCase()==='d')setDarkMode(!darkMode);if(event.key.toLowerCase()==='f'){if(document.fullscreenElement)document.exitFullscreen();else document.documentElement.requestFullscreen();}if('12345678'.includes(event.key))document.querySelectorAll('#buttons button')[Number(event.key)-1].click();});
+    addEventListener('resize',sizeBorder);sizeBorder();setDarkMode(darkMode);
   </script>
 </body>
 </html>
