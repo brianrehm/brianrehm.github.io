@@ -11,6 +11,7 @@
     body.dark-mode { background: #111216 !important; }
     #app { width: 95%; text-align: center; z-index: 1; }
     #time { font-variant-numeric: tabular-nums; font-size: 18vw; font-weight: 700; line-height: 1; }
+    #time .colon { display: inline-block; transform: translateY(-.10em); }
     button, input { font: inherit; }
     button { margin: 6px; padding: 10px 16px; color: #111; font-size: 18px; border: 0; border-radius: 10px; cursor: pointer; }
     #dark-mode { position: fixed; top: 18px; right: 18px; z-index: 1; color: #fff; background: rgb(255 255 255 / 14%); border: 1px solid rgb(255 255 255 / 25%); font-size: 14px; }
@@ -48,7 +49,7 @@
     labels.forEach((label,index)=>{const button=document.createElement('button');button.textContent=label;button.addEventListener('click',()=>load(presets[index],button,true));buttons.appendChild(button);});
     function load(seconds, selected, startImmediately) { total=remaining=seconds; running=false; end=0; document.querySelectorAll('#buttons button').forEach(button=>button.classList.remove('active'));if(selected)selected.classList.add('active');render();if(startImmediately)toggle(); }
     function format(seconds) { seconds=Math.ceil(seconds);return `${Math.floor(seconds/60)}:${String(seconds%60).padStart(2,'0')}`; }
-    function render() { const displayTime=format(remaining);time.textContent=displayTime;document.title=`${displayTime} — Classroom Timer`;progress.style.strokeDashoffset=100*(remaining/total);if(!darkMode)document.body.style.background=remaining<=10?'#8b0000':remaining<=30?'#d97706':remaining<=60?'#b59b00':'#145a32'; }
+    function render() { const displayTime=format(remaining);time.innerHTML=displayTime.replace(':','<span class="colon">:</span>');document.title=`${displayTime} — Classroom Timer`;progress.style.strokeDashoffset=100*(remaining/total);if(!darkMode)document.body.style.background=remaining<=10?'#8b0000':remaining<=30?'#d97706':remaining<=60?'#b59b00':'#145a32'; }
     function tick() {if(!running)return;remaining=Math.max(0,(end-Date.now())/1000);if(!remaining){running=false;beep();}render();}
     function toggle() {if(!running){end=Date.now()+remaining*1000;running=true;}else{remaining=(end-Date.now())/1000;running=false;}}
     function restart() {running=false;remaining=total;render();}
