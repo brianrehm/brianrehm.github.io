@@ -8,6 +8,31 @@
     * { box-sizing: border-box; }
     body { margin: 0; min-height: 100vh; overflow: hidden; font-family: system-ui, sans-serif; background: #e8ecef; color: #2f3640; display: grid; place-items: center; transition: background .3s ease; }
     body.dark-mode { background: #1b1f24 !important; color: #e9ecef !important; }
+    /* Light-mode help dialog */
+
+    body:not(.dark-mode) #help-menu {
+        background: rgb(47 54 64 / 20%);
+    }
+    
+    body:not(.dark-mode) .help-card {
+        background: #f4f6f8;
+        color: #2f3640;
+        border: 1px solid rgb(47 54 64 / 15%);
+        box-shadow: 0 20px 60px rgb(47 54 64 / 18%);
+    }
+    
+    body:not(.dark-mode) .help-card dt {
+        background: #dce3e8;
+        color: #2f3640;
+    }
+    
+    body:not(.dark-mode) .help-card dd {
+        color: #2f3640;
+    }
+    
+    body:not(.dark-mode) .help-card p {
+        color: #6b7280;
+    }
     #app { width: 95%; text-align: center; z-index: 1; }
     #time { font-variant-numeric: tabular-nums; font-size: 18vw; font-weight: 700; line-height: 1; }
     #time .colon { display: inline-block; transform: translateY(-.10em); }
