@@ -1,66 +1,67 @@
-
-<!doctype html>
-<html lang="en">
-<head>
-  <link rel="icon" type="image/png" href="favicon.png">
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Classroom Timer v3</title>
+<!DOCTYPE html>
+<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <link rel="icon" type="image/png" href="https://brianrehm.github.io/favicon.png">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>5:00 — Classroom Timer</title>
   <style>
     * { box-sizing: border-box; }
-    body { margin: 0; min-height: 100vh; overflow: hidden; font-family: system-ui, sans-serif; background: #145a32; color: #fff; display: grid; place-items: center; transition: background .3s ease; }
-    body.dark-mode { background: #111216 !important; }
+    body { margin: 0; min-height: 100vh; overflow: hidden; font-family: system-ui, sans-serif; background: #e8ecef; color: #2f3640; display: grid; place-items: center; transition: background .3s ease; }
+    body.dark-mode { background: #1b1f24 !important; color: #e9ecef !important; }
     #app { width: 95%; text-align: center; z-index: 1; }
     #time { font-variant-numeric: tabular-nums; font-size: 18vw; font-weight: 700; line-height: 1; }
     #time .colon { display: inline-block; transform: translateY(-.10em); }
     button, input { font: inherit; }
-    button { margin: 6px; padding: 10px 16px; color: #111; font-size: 18px; border: 0; border-radius: 10px; cursor: pointer; }
-    #dark-mode { position: fixed; top: 18px; right: 18px; z-index: 1; color: #fff; background: rgb(255 255 255 / 14%); border: 1px solid rgb(255 255 255 / 25%); font-size: 14px; }
-    #dark-mode.enabled { color: #111; background: #fff; }
-    .active { outline: 3px solid #fff; }
+    button { background:#dce3e8; color:#2f3640; margin: 6px; padding: 10px 16px; color: #2b3138; font-size: 18px; border: 0; border-radius: 10px; cursor: pointer; }
+    #dark-mode { position: fixed; top:18px; right:18px; width:44px; height:44px; padding:0; border:0; background:transparent; display:flex; align-items:center; justify-content:center; z-index:1; color:#2f3640; cursor:pointer; transition:transform .2s ease, opacity .2s ease; }
+    #dark-mode:hover { transform:scale(1.08); } body.dark-mode #dark-mode { color:#e9ecef; } #dark-mode.enabled { background:transparent; }
+    .active { outline: 3px solid #f1f3f5; }
     #border { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; }
-    #border-track, #border-progress { fill: none; stroke-width: 20; vector-effect: non-scaling-stroke; }
+    #border-track, #border-progress { fill: none; stroke-width: 28; vector-effect: non-scaling-stroke; }
     #border-track { stroke: rgb(255 255 255 / 20%); }
-    #border-progress { stroke: #fff; stroke-linecap: round; stroke-dasharray: 100; stroke-dashoffset: 100; transition: stroke-dashoffset .08s linear; }
+    #border-progress { stroke: #2f3640; stroke-linecap: butt; stroke-dasharray: 100; stroke-dashoffset: 100; transition: stroke-dashoffset .08s linear; }
     #help-menu { position: fixed; inset: 0; z-index: 2; display: grid; place-items: center; padding: 24px; background: rgb(0 0 0 / 58%); opacity: 0; pointer-events: none; transition: opacity .2s ease; }
     #help-menu.open { opacity: 1; pointer-events: auto; }
-    .help-card { width: min(460px, 100%); padding: 30px; border: 1px solid rgb(255 255 255 / 25%); border-radius: 18px; background: #17211a; box-shadow: 0 20px 60px rgb(0 0 0 / 35%); text-align: left; }
+    .help-card { width: min(460px, 100%); padding: 30px; border: 1px solid rgb(255 255 255 / 25%); border-radius: 18px; background: #20262d; box-shadow: 0 20px 60px rgb(0 0 0 / 35%); text-align: left; }
     .help-card h2 { margin: 0 0 20px; font-size: 1.45rem; }
     .help-card dl { display: grid; grid-template-columns: auto 1fr; gap: 14px 20px; margin: 0; align-items: center; font-size: 1.05rem; }
     .help-card dt { padding: 4px 9px; border-radius: 6px; background: rgb(255 255 255 / 13%); font-weight: 700; }
     .help-card dd { margin: 0; }.help-card p { margin: 24px 0 0; color: rgb(255 255 255 / 70%); font-size: .9rem; }
-  </style>
+  #edit-presets{position:relative;display:flex;align-items:center;justify-content:center;width:44px;height:44px;padding:0;}#edit-presets::after{content:"Customize Presets";position:absolute;bottom:125%;right:0;background:#2b3138;color:#f1f3f5;padding:6px 10px;border-radius:8px;font-size:12px;white-space:nowrap;opacity:0;transform:translateY(4px);transition:.2s;pointer-events:none;}#edit-presets:hover::after{opacity:1;transform:translateY(0);} .preset-editor{margin:6px;padding:10px 16px;font:inherit;font-size:18px;border:0;border-radius:10px;text-align:center;background:#f1f3f5;color:#2b3138;width:90px;outline:3px solid #ffd54f;} .preset-editing button{background:#ffd54f;color:#2b3138;box-shadow:0 0 0 2px rgba(255,255,255,.35);} .preset-editing button:hover{transform:translateY(-1px);cursor:text;} body.dark-mode #time{color:#f1f3f5;} </style>
 </head>
-<body>
-  <svg id="border" aria-hidden="true"><rect id="border-track" pathLength="100" /><rect id="border-progress" pathLength="100" /></svg>
-  <button id="dark-mode" type="button" aria-pressed="false">Dark mode</button>
+<body class="dark-mode">
+  <svg id="border" aria-hidden="true" viewBox="0 0 1920 911"><rect id="border-track" pathLength="100" x="10" y="10" width="1900" height="891"></rect><rect id="border-progress" pathLength="100" x="10" y="10" width="1900" height="891" style="stroke-dashoffset: 100;"></rect></svg>
+  <button id="dark-mode" type="button" aria-pressed="true" class="enabled">Color mode</button>
   <main id="app">
-    <div id="time" aria-live="polite">5:00</div>
-    <div id="buttons" aria-label="Preset timers"></div>
-    <div style="margin-top:10px"><label for="custom">Custom time</label> <input id="custom" placeholder="7m30s" /> <button id="go" type="button">Go</button></div>
+    <div id="time" aria-live="polite">5<span class="colon">:</span>00</div>
+    <div style="display:flex;justify-content:center;align-items:center;gap:8px;"><div id="buttons" aria-label="Preset timers"></div><button id="edit-presets" type="button" aria-label="Customize Presets"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.3 2h3.4l.6 2.1a8.7 8.7 0 0 1 1.8.8l1.9-1 2.4 2.4-1 1.9c.3.6.6 1.2.8 1.8L22 10.3v3.4l-2.1.6a8.7 8.7 0 0 1-.8 1.8l1 1.9-2.4 2.4-1.9-1a8.7 8.7 0 0 1-1.8.8L13.7 22h-3.4l-.6-2.1a8.7 8.7 0 0 1-1.8-.8l-1.9 1-2.4-2.4 1-1.9a8.7 8.7 0 0 1-.8-1.8L2 13.7v-3.4l2.1-.6a8.7 8.7 0 0 1 .8-1.8l-1-1.9 2.4-2.4 1.9 1a8.7 8.7 0 0 1 1.8-.8z"/><circle cx="12" cy="12" r="3"/></svg></button></div>
+    <div style="margin-top:10px"><label for="custom">Custom time</label> <input id="custom" placeholder="7m30s"> <button id="go" type="button">Go</button></div>
   </main>
   <section id="help-menu" role="dialog" aria-modal="true" aria-labelledby="help-title" aria-hidden="true"><div class="help-card"><h2 id="help-title">Keyboard shortcuts</h2><dl><dt>Space</dt><dd>Pause or resume</dd><dt>1–8</dt><dd>Start a preset timer</dd><dt>R</dt><dd>Restart the current timer</dd><dt>F</dt><dd>Toggle fullscreen</dd><dt>D</dt><dd>Toggle dark mode</dd><dt>?</dt><dd>Show or hide this help menu</dd></dl><p>Press Esc or ? to close.</p></div></section>
   <script>
-    const presets = [90,120,180,240,300,600,900,1200], labels = ['90s','2m','3m','4m','5m','10m','15m','20m'];
+    const defaultPresets=[{label:'90s',seconds:90},{label:'2m',seconds:120},{label:'3m',seconds:180},{label:'4m',seconds:240},{label:'5m',seconds:300},{label:'10m',seconds:600},{label:'15m',seconds:900},{label:'20m',seconds:1200}]; const presets=JSON.parse(localStorage.getItem('classroom-timer-presets'))||defaultPresets; let editingPresets=false;
     let total = 300, end = 0, running = false, remaining = 300;
     const buttons = document.getElementById('buttons'), time = document.getElementById('time'), progress = document.getElementById('border-progress'), borderTrack = document.getElementById('border-track'), helpMenu = document.getElementById('help-menu'), darkButton = document.getElementById('dark-mode');
+    const moonIcon=`<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8z"/></svg>`;
+    const sunIcon=`<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="M4.93 4.93l1.41 1.41"/><path d="M17.66 17.66l1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="M4.93 19.07l1.41-1.41"/><path d="M17.66 6.34l1.41-1.41"/></svg>`;
     let darkMode = localStorage.getItem('classroom-timer-dark-mode') === 'true';
-    function sizeBorder() { const inset=10, width=innerWidth-inset*2, height=innerHeight-inset*2; document.getElementById('border').setAttribute('viewBox',`0 0 ${innerWidth} ${innerHeight}`); [borderTrack,progress].forEach(rect=>{rect.setAttribute('x',inset);rect.setAttribute('y',inset);rect.setAttribute('width',width);rect.setAttribute('height',height);}); }
-    function setDarkMode(enabled) { darkMode=enabled; document.body.classList.toggle('dark-mode',enabled); darkButton.classList.toggle('enabled',enabled); darkButton.setAttribute('aria-pressed',String(enabled)); darkButton.textContent=enabled ? 'Color mode' : 'Dark mode'; localStorage.setItem('classroom-timer-dark-mode',String(enabled)); render(); }
-    labels.forEach((label,index)=>{const button=document.createElement('button');button.textContent=label;button.addEventListener('click',()=>load(presets[index],button,true));buttons.appendChild(button);});
+    function sizeBorder() { const inset=0, width=innerWidth-inset*2, height=innerHeight-inset*2; document.getElementById('border').setAttribute('viewBox',`0 0 ${innerWidth} ${innerHeight}`); [borderTrack,progress].forEach(rect=>{rect.setAttribute('x',inset);rect.setAttribute('y',inset);rect.setAttribute('width',width);rect.setAttribute('height',height);}); }
+    function setDarkMode(enabled) { darkMode=enabled; document.body.classList.toggle('dark-mode',enabled); darkButton.classList.toggle('enabled',enabled); darkButton.setAttribute('aria-pressed',String(enabled)); darkButton.innerHTML=enabled ? sunIcon : moonIcon; localStorage.setItem('classroom-timer-dark-mode',String(enabled)); render(); }
+    function renderPresetButtons(){buttons.innerHTML='';presets.forEach((preset,index)=>{const button=document.createElement('button');button.textContent=preset.label;button.addEventListener('click',()=>{if(editingPresets){const input=document.createElement('input');input.value=preset.label;input.className='preset-editor';button.replaceWith(input);input.focus();input.select();function save(){const value=input.value.trim();const seconds=parse(value);if(seconds){presets[index]={label:value,seconds};localStorage.setItem('classroom-timer-presets',JSON.stringify(presets));}renderPresetButtons();}input.addEventListener('keydown',e=>{if(e.key==='Enter')save();if(e.key==='Escape')renderPresetButtons();});input.addEventListener('blur',save);return;}load(preset.seconds,button,true);});buttons.appendChild(button);});} renderPresetButtons();
     function load(seconds, selected, startImmediately) { total=remaining=seconds; running=false; end=0; document.querySelectorAll('#buttons button').forEach(button=>button.classList.remove('active'));if(selected)selected.classList.add('active');render();if(startImmediately)toggle(); }
     function format(seconds) { seconds=Math.ceil(seconds);return `${Math.floor(seconds/60)}:${String(seconds%60).padStart(2,'0')}`; }
-    function render() { const displayTime=format(remaining);time.innerHTML=displayTime.replace(':','<span class="colon">:</span>');document.title=`${displayTime} — Classroom Timer`;progress.style.strokeDashoffset=100*(remaining/total);if(!darkMode)document.body.style.background=remaining<=10?'#8b0000':remaining<=30?'#d97706':remaining<=60?'#b59b00':'#145a32'; }
+    function render() { const displayTime=format(remaining);time.innerHTML=displayTime.replace(':','<span class="colon">:</span>');document.title=`${displayTime} — Classroom Timer`;progress.style.strokeDashoffset=100*(remaining/total);progress.style.stroke=darkMode?'#e9ecef':'#2f3640';if(!darkMode)document.body.style.background='#e8ecef'; }
     function tick() {if(!running)return;remaining=Math.max(0,(end-Date.now())/1000);if(!remaining){running=false;beep();}render();}
     function toggle() {if(!running){end=Date.now()+remaining*1000;running=true;}else{remaining=(end-Date.now())/1000;running=false;}}
     function restart() {running=false;remaining=total;render();}
     function toggleHelp() {const open=!helpMenu.classList.contains('open');helpMenu.classList.toggle('open',open);helpMenu.setAttribute('aria-hidden',String(!open));}
     function beep(){const context=new(window.AudioContext||window.webkitAudioContext)(),oscillator=context.createOscillator(),gain=context.createGain();oscillator.connect(gain).connect(context.destination);oscillator.frequency.value=880;oscillator.start();oscillator.stop(context.currentTime+.6);}
     function parse(text){let seconds=0,match;text=text.toLowerCase();while((match=/(\d+)h/.exec(text))){seconds+=Number(match[1])*3600;text=text.replace(match[0],'');}while((match=/(\d+)m/.exec(text))){seconds+=Number(match[1])*60;text=text.replace(match[0],'');}while((match=/(\d+)s/.exec(text))){seconds+=Number(match[1]);text=text.replace(match[0],'');}return seconds;}
-    setInterval(tick,80); darkButton.addEventListener('click',()=>setDarkMode(!darkMode));document.getElementById('go').addEventListener('click',()=>{const seconds=parse(document.getElementById('custom').value);if(seconds)load(seconds,null,true);});
+    setInterval(tick,80); document.getElementById('edit-presets').addEventListener('click',()=>{editingPresets=!editingPresets;document.getElementById('edit-presets').style.background=editingPresets?'#ffd54f':'';buttons.classList.toggle('preset-editing',editingPresets);renderPresetButtons();}); darkButton.addEventListener('click',()=>setDarkMode(!darkMode));document.getElementById('go').addEventListener('click',()=>{const seconds=parse(document.getElementById('custom').value);if(seconds)load(seconds,null,true);});
     document.getElementById('custom').addEventListener('keydown', event => { if (event.key === 'Enter') { event.preventDefault(); document.getElementById('go').click(); } });
     document.addEventListener('keydown',event=>{if(event.target.matches('input,textarea,select'))return;if(event.key==='?'){toggleHelp();return;}if(event.key==='Escape'&&helpMenu.classList.contains('open')){toggleHelp();return;}if(helpMenu.classList.contains('open'))return;if(event.code==='Space'){event.preventDefault();toggle();}if(event.key.toLowerCase()==='r')restart();if(event.key.toLowerCase()==='d')setDarkMode(!darkMode);if(event.key.toLowerCase()==='f'){if(document.fullscreenElement)document.exitFullscreen();else document.documentElement.requestFullscreen();}if('12345678'.includes(event.key))document.querySelectorAll('#buttons button')[Number(event.key)-1].click();});
     addEventListener('resize',sizeBorder);sizeBorder();setDarkMode(darkMode);
   </script>
-</body>
-</html>
+
+
+</body></html>
