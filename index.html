@@ -36,6 +36,7 @@
     <div id="time" aria-live="polite">5<span class="colon">:</span>00</div>
     <div style="display:flex;justify-content:center;align-items:center;gap:8px;"><div id="buttons" aria-label="Preset timers"></div><button id="edit-presets" type="button" aria-label="Customize Presets"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.3 2h3.4l.6 2.1a8.7 8.7 0 0 1 1.8.8l1.9-1 2.4 2.4-1 1.9c.3.6.6 1.2.8 1.8L22 10.3v3.4l-2.1.6a8.7 8.7 0 0 1-.8 1.8l1 1.9-2.4 2.4-1.9-1a8.7 8.7 0 0 1-1.8.8L13.7 22h-3.4l-.6-2.1a8.7 8.7 0 0 1-1.8-.8l-1.9 1-2.4-2.4 1-1.9a8.7 8.7 0 0 1-.8-1.8L2 13.7v-3.4l2.1-.6a8.7 8.7 0 0 1 .8-1.8l-1-1.9 2.4-2.4 1.9 1a8.7 8.7 0 0 1 1.8-.8z"/><circle cx="12" cy="12" r="3"/></svg></button></div>
     <div style="margin-top:10px"><label for="custom">Custom time</label> <input id="custom" placeholder="7m30s"> <button id="go" type="button">Go</button></div>
+    <div id="help-hint">Press ? for help</div>
   </main>
   <section id="help-menu" role="dialog" aria-modal="true" aria-labelledby="help-title" aria-hidden="true"><div class="help-card"><h2 id="help-title">Keyboard shortcuts</h2><dl><dt>Space</dt><dd>Pause or resume</dd><dt>1–8</dt><dd>Start a preset timer</dd><dt>R</dt><dd>Restart the current timer</dd><dt>F</dt><dd>Toggle fullscreen</dd><dt>D</dt><dd>Toggle dark mode</dd><dt>?</dt><dd>Show or hide this help menu</dd></dl><p>Press Esc or ? to close.</p></div></section>
   <script>
